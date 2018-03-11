@@ -1,4 +1,4 @@
-# Project Repo Name
+# BikeSpeedMonitor
 
 ## Executive Summary
 Cycling also known as biking is one of the most common activity for stay in shape. In some cases, it is a merely a mean of transportation. An estimated [12,4 %](https://www.statista.com/statistics/631280/kinds-of-sports-people-engage-in-regularly/) Americans bike regularly. The ubiquitiousness of wearable devices enabled many applications in several areas. Using Wearable devices in fitness is very common because they allow us to gather fitness data for analysis and give us the opportunity to improve our fitness posture. "BikeSpeedMonitor" is designed in combination with MetaWearRG sensor to provide a measure of cycling speed, cadence and pace then send feedback to the user so he ca adjust his/her speed according to a defined threshold.
@@ -8,6 +8,8 @@ Cycling also known as biking is one of the most common activity for stay in shap
 * Build a mobile app with a simple interface that display speed, cadence, pace, distance and workout time to the user
 * Send haptic feedback to user if speed lower than specified threshold
 * Test application to ensure the functionality
+
+## Application Requirements
 
 ## User stories
 As a **cyclist**, I want to **monitor my cycling performance** so I can **analyze and improve on  my fitness**.
@@ -34,6 +36,8 @@ As a **malicious actor**, I want to **conduct a denial of service attack on the 
 **Mitigations:**
 * By default, wearable device should be in non discoverable mode
 * Adjust BLE power so device is only visible in very close range
+
+
 
 ## High Level Design
 
