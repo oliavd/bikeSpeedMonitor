@@ -1,7 +1,7 @@
 # BikeSpeedMonitor
 
 ## Executive Summary
-Cycling also known as biking is one of the most common activity for stay in shape. In some cases, it is a merely a mean of transportation. An estimated [12,4 %](https://www.statista.com/statistics/631280/kinds-of-sports-people-engage-in-regularly/) Americans bike regularly. The ubiquitiousness of wearable devices enabled many applications in several areas. Using Wearable devices in fitness is very common because they allow us to gather fitness data for analysis and give us the opportunity to improve our fitness posture. "BikeSpeedMonitor" is designed in combination with MetaWearRG sensor to provide a measure of cycling speed, cadence and pace then send feedback to the user so he ca adjust his/her speed according to a defined threshold.
+Cycling also known as biking is one of the most common activity to stay in shape. In some cases, it is  merely a mean of transportation. An estimated [12,4 %](https://www.statista.com/statistics/631280/kinds-of-sports-people-engage-in-regularly/) Americans bike regularly. The ubiquitiousness of wearable devices enabled many applications in several areas. Using Wearable devices in fitness is very common because they allow us to gather fitness data for analysis and give us the opportunity to improve our fitness posture. "BikeSpeedMonitor" is designed in combination with MetaWearRG sensor to provide a measure of cycling speed, cadence and pace then send feedback to the user so he can adjust his/her speed according to a defined threshold.
 
 ## Project Goals
 *  Record sensor data from MetaWearRG
@@ -13,26 +13,32 @@ Cycling also known as biking is one of the most common activity for stay in shap
 
 ## User stories
 As a **cyclist**, I want to **monitor my cycling performance** so I can **analyze and improve on  my fitness**.
+
 **Acceptance Criteria:**
 * A user will be able to view the following cycling metrics on the phone interface:current speed, average speed, max speed, RPM, distance and time.
 
 As a **cyclist**, I want to **set a desired speed** so I can **maintain that speed on my workout**.
+
 **Acceptance Criteria:**
 * A user will be able to input a speed that will constitute the threshold speed a user need to keep up with
 
 
 As a **cyclist**, I want to **receive haptic feedback** so I can **increase my current speed over the the specified threshold**.
+
 **Acceptance Criteria:**
 * The coin Vibe Motor of the MetaWear board will vibrate everytime the current speed is lower than the defined threshold
 
 
 
 ## Misuser stories
-As a **malicious actor**, I want to **conduct a bluetooth man in the middle attack** so I can **unauthorized access to sensor data**.
+As a **malicious actor**, I want to **conduct a bluetooth man in the middle attack** so I can get **unauthorized access to sensor data**.
+
 **Mitigations:**
 * Use end to end encryption for device connection
+* The Wearable device should operate in a secure mode
 
 As a **malicious actor**, I want to **conduct a denial of service attack on the wearable device** so I can **impede usage**.
+
 **Mitigations:**
 * By default, wearable device should be in non discoverable mode
 * Adjust BLE power so device is only visible in very close range
@@ -53,7 +59,7 @@ The role of the mobile application is to receive raw sensor data, convert and di
 ##### MetaWear API
 The MetaWear API allows us to communicate (send and receive) data from/to the MetaWear board.
 
-User Interface Design
+##### User Interface Design
 [picture]
 
 ### MetawearRG Board
