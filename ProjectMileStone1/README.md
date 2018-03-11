@@ -1,7 +1,7 @@
 # Project Repo Name
 
 ## Executive Summary
-Cycling also known as biking is one of the most common activity for stay in shape. In some cases, it is a merely a mean of transportation. An estimated 12,4 %[[https://www.statista.com/statistics/631280/kinds-of-sports-people-engage-in-regularly/] Americans bike regularly. The ubiquitiousness of wearable devices enabled many applications in several areas. Using Wearable devices in fitness is very common because they allow us to gather fitness data for analysis and give us the opportunity to improve our fitness posture. "BikeSpeedMonitor" is designed in combination with MetaWearRG sensor to provide a measure of cycling speed, cadence and pace then send feedback to the user so he ca adjust his/her speed according to a defined threshold.
+Cycling also known as biking is one of the most common activity for stay in shape. In some cases, it is a merely a mean of transportation. An estimated [12,4 %](https://www.statista.com/statistics/631280/kinds-of-sports-people-engage-in-regularly/) Americans bike regularly. The ubiquitiousness of wearable devices enabled many applications in several areas. Using Wearable devices in fitness is very common because they allow us to gather fitness data for analysis and give us the opportunity to improve our fitness posture. "BikeSpeedMonitor" is designed in combination with MetaWearRG sensor to provide a measure of cycling speed, cadence and pace then send feedback to the user so he ca adjust his/her speed according to a defined threshold.
 
 ## Project Goals
 *  Record sensor data from MetaWearRG
