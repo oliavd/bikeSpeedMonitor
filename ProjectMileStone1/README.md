@@ -11,7 +11,7 @@ Cycling also known as biking is one of the most common activity to stay in shape
 
 ## Application Requirements
 
-## User stories
+### User stories
 As a **cyclist**, I want to **monitor my cycling performance** so I can **analyze and improve on  my fitness**.
 
 **Acceptance Criteria:**
@@ -30,7 +30,7 @@ As a **cyclist**, I want to **receive haptic feedback** so I can **increase my c
 
 
 
-## Misuser stories
+### Misuser stories
 As a **malicious actor**, I want to **conduct a bluetooth man in the middle attack** so I can get **unauthorized access to sensor data**.
 
 **Mitigations:**
