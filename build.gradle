@@ -5,6 +5,10 @@ buildscript {
     repositories {
         google()
         jcenter()
+        ivy {
+            url "https://mbientlab.com/releases/ivyrep"
+            layout "gradle"
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
@@ -19,6 +23,11 @@ allprojects {
     repositories {
         google()
         jcenter()
+        ivy {
+            url "https://mbientlab.com/releases/ivyrep"
+            layout "gradle"
+        }
+
     }
 }
 
