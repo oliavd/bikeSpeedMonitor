@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -12,16 +11,14 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.android.BtleService;
-import com.example.oliavd.bikespeedmonitor.DisplayActivityFragment.*;
+import com.example.oliavd.bikespeedmonitor.DisplayActivityFragment1.*;
 
 import bolts.Continuation;
-import bolts.Task;
 
 import static android.content.DialogInterface.*;
 
@@ -82,7 +79,7 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_display_activity);
+        setContentView(R.layout.activity_display);
 
 
         btDevice= getIntent().getParcelableExtra(EXTRA_BT_DEVICE);
@@ -127,7 +124,7 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
                         if (!task.isCancelled()) {
                             runOnUiThread(() -> {
                                 ((DialogFragment) getSupportFragmentManager().findFragmentByTag(RECONNECT_DIALOG_TAG)).dismiss();
-                                ((DisplayActivityFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_display_activity)).reconnected();
+                                ((DisplayActivityFragment1) getSupportFragmentManager().findFragmentById(R.id.fragment_display_activity_1)).reconnected();
                             });
                         } else {
                             finish();

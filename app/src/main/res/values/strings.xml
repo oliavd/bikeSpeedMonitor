@@ -9,7 +9,13 @@
     <string name="message_wait">Please wait</string>
 
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="workout_data_stream">LOREM EPSUM</string>
+    <string name="button_activity_control">START</string>
+    <string name="stop_button">STOP</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment">Hello blank fragment_sensor_data</string>
+    <string name="todo">Todo</string>
+
 </resources>

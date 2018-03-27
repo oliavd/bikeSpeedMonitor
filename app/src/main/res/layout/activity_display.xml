@@ -2,15 +2,26 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.oliavd.bikespeedmonitor.DisplayActivity" >
+    tools:context="com.example.oliavd.bikespeedmonitor.DisplayActivity">
 
     <fragment
-        android:id="@+id/fragment_display_activity"
-        android:name="com.example.oliavd.bikespeedmonitor.DisplayActivityFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:id="@+id/fragment_display_activity_1"
+        android:name="com.example.oliavd.bikespeedmonitor.DisplayActivityFragment1"
+        android:layout_width="369dp"
+        android:layout_height="508dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="3dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout="@layout/fragment_display_activity1" />
 
 
 </android.support.constraint.ConstraintLayout>
