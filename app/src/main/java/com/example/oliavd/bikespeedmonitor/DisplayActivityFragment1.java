@@ -135,75 +135,109 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
                 Log.i("onClickStart", "Clicked");
 
-                accelerometer.acceleration().addRouteAsync(new RouteBuilder() {
-
-                    @Override
-                    public void configure(RouteComponent source) {
-
-                        source.highpass((byte) 4).lowpass((byte) 4).multicast()
-
-                                .to().map(Function1.RMS).stream(new Subscriber() {
-
-                                    @Override
-                                    public void apply(Data data, Object... env) {
-
-                                        Log.i("RMS " + TAG_ACCEL, String.format("%2f", data.value(Float.class)));
-
-                                        getActivity().runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-
-                                                //accel_data.setText(data.value(Acceleration.class).toString());
-                                                accel_data.setText(String.format("%2f", data.value(Float.class)));
-                                            }
-                                        });
-
-                                    }
-                        }).to().stream(new Subscriber() {
-                            @Override
-                            public void apply(Data data, Object... env) {
-
-                                Log.i(TAG_ACCEL + " 2 ", data.value(Acceleration.class).toString());
-
-                            }
-                        });
-                    }
-
-                }).continueWith(new Continuation<Route, Void>() {
-                    @Override
-                    public Void then(Task<Route> task) throws Exception {
-                        accelerometer.acceleration().start();
-                        accelerometer.start();
-                        return null;
-                    }
-                });
-
-//                sensorfusion.linearAcceleration().addRouteAsync(new RouteBuilder() {
+//                accelerometer.acceleration().addRouteAsync(new RouteBuilder() {
+//
 //                    @Override
 //                    public void configure(RouteComponent source) {
 //
-//                        source.stream(new Subscriber() {
+//                        source.highpass((byte) 4).lowpass((byte) 4).multicast()
+//
+//                                .to().stream(new Subscriber() {
+//                            @Override
+//                            public void apply(Data data, Object... env) {
+//                                Log.i(TAG_ACCEL+" {x,y,z} ",data.value(Acceleration.class).toString());
+//                            }
+//                        }).to().split().index(0).stream(new Subscriber() {
+//
+//                                    @Override
+//                                    public void apply(Data data, Object... env) {
+//
+//                                        Log.i( TAG_ACCEL+" x: ", data.value(Float.class).toString());
+//
+////                                        getActivity().runOnUiThread(new Runnable() {
+////                                            @Override
+////                                            public void run() {
+////
+////                                                //accel_data.setText(data.value(Acceleration.class).toString());
+////                                                accel_data.setText(String.format("%2f", data.value(Float.class)));
+////                                            }
+////                                        });
+//
+//                                    }
+//                        }).to().split().index(1).stream(new Subscriber() {
 //                            @Override
 //                            public void apply(Data data, Object... env) {
 //
-//                                Log.i("Accel from senFusion:", data.value(Acceleration.class).toString());
+//                                Log.i(TAG_ACCEL + " y: ", data.value(Float.class).toString());
 //
+//                            }
+//
+//                        }).to().split().index(2).stream(new Subscriber() {
+//                            @Override
+//                            public void apply(Data data, Object... env) {
+//                                Log.i(TAG_ACCEL+" z: ",data.value(Float.class).toString());
 //                            }
 //                        });
 //                    }
 //
-//
 //                }).continueWith(new Continuation<Route, Void>() {
-//
 //                    @Override
 //                    public Void then(Task<Route> task) throws Exception {
-//                        sensorfusion.linearAcceleration().start();
-//                        sensorfusion.start();
+//                        accelerometer.acceleration().start();
+//                        accelerometer.start();
 //                        return null;
 //                    }
-//
-//
 //                });
+
+                sensorfusion.linearAcceleration().addRouteAsync(new RouteBuilder() {
+                    @Override
+                    public void configure(RouteComponent source) {
+
+                        source.multicast()
+
+                        .to().stream(new Subscriber() {
+                            @Override
+                            public void apply(Data data, Object... env) {
+
+                                final Acceleration value = data.value(Acceleration.class);
+
+                                //Log.i("{x,y,z}:");
+                                Log.i("{x}",String.format("%2f",value.x()));
+                                Log.i("{y}",String.format("%2f",value.y()));
+                                Log.i("{z}",String.format("%2f",value.z()));
+
+                            }
+                        });
+//                        .to().split().index(0).stream(new Subscriber() {
+//                            @Override
+//                            public void apply(Data data, Object... env) {
+//                                Log.i("{x}", data.value(Float.class).toString());
+//                            }
+//                        }).to().split().index(1).stream(new Subscriber() {
+//                            @Override
+//                            public void apply(Data data, Object... env) {
+//                                Log.i("{y}:", data.value(Float.class).toString());
+//                            }
+//                        }).to().split().index(2).stream(new Subscriber() {
+//                            @Override
+//                            public void apply(Data data, Object... env) {
+//                                Log.i("{z}:", data.value(Float.class).toString());
+//                            }
+//                        });
+                    }
+
+
+                }).continueWith(new Continuation<Route, Void>() {
+
+                    @Override
+                    public Void then(Task<Route> task) throws Exception {
+                        sensorfusion.linearAcceleration().start();
+                        sensorfusion.start();
+                        return null;
+                    }
+
+
+                });
 
 
                 view.findViewById(R.id.stopbutton).setOnClickListener(new View.OnClickListener() {
