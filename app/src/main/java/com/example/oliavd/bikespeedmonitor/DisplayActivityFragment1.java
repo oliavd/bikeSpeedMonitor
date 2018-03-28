@@ -127,13 +127,11 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 //           }
 //        });
 
-        view.findViewById(R.id.button_activity_ctrl).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        view.findViewById(R.id.button_activity_ctrl).setOnClickListener(v -> {
 
-                view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
 
-                Log.i("onClickStart", "Clicked");
+            Log.i("onClickStart", "Clicked");
 
 //                accelerometer.acceleration().addRouteAsync(new RouteBuilder() {
 //
@@ -189,30 +187,29 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 //                    }
 //                });
 
-                sensorfusion.linearAcceleration().addRouteAsync(new RouteBuilder() {
-                    @Override
-                    public void configure(RouteComponent source) {
+            sensorfusion.linearAcceleration().addRouteAsync(source -> {
 
-                        source.multicast()
+                source.multicast()
 
-                        .to().stream(new Subscriber() {
-                            @Override
-                            public void apply(Data data, Object... env) {
+                        .to().stream((Subscriber) (data, env) -> {
 
-                                final Acceleration value = data.value(Acceleration.class);
+                            final Acceleration value = data.value(Acceleration.class);
 
-                                //Log.i("{x,y,z}:");
-                                Log.i("{x}",String.format("%2f",value.x()));
-                                Log.i("{y}",String.format("%2f",value.y()));
-                                Log.i("{z}",String.format("%2f",value.z()));
 
-                            }
+
+                            Log.i("{x,y,z}:",
+                                    value.toString());
+                            Log.i("{x}", String.format("%2f", value.x()));
+                            Log.i("{y}", String.format("%2f", value.y()));
+                            Log.i("{z}", String.format("%2f", value.z()));
+
                         });
-//                        .to().split().index(0).stream(new Subscriber() {
-//                            @Override
-//                            public void apply(Data data, Object... env) {
+//                        .to().stream((Subscriber) (data,env)-> {
+//
+//
 //                                Log.i("{x}", data.value(Float.class).toString());
-//                            }
+
+//
 //                        }).to().split().index(1).stream(new Subscriber() {
 //                            @Override
 //                            public void apply(Data data, Object... env) {
@@ -224,52 +221,35 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 //                                Log.i("{z}:", data.value(Float.class).toString());
 //                            }
 //                        });
-                    }
+            }).continueWith((Continuation<Route, Void>) task -> {
+                sensorfusion.linearAcceleration().start();
+                sensorfusion.start();
+                return null;
+            });
 
 
-                }).continueWith(new Continuation<Route, Void>() {
+            view.findViewById(R.id.stopbutton).setOnClickListener(v1 -> {
 
-                    @Override
-                    public Void then(Task<Route> task) throws Exception {
-                        sensorfusion.linearAcceleration().start();
-                        sensorfusion.start();
-                        return null;
-                    }
+                view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
 
+                Log.i("onClickStop", "Clicked");
+                accelerometer.stop();
+                accelerometer.acceleration().stop();
+                metawear.tearDown();
+                Led led = metawear.getModule(Led.class);
 
-                });
-
-
-                view.findViewById(R.id.stopbutton).setOnClickListener(new View.OnClickListener() {
-
-
-                    @Override
-                    public void onClick(View v) {
-
-                        view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
-
-                        Log.i("onClickStop", "Clicked");
-                        accelerometer.stop();
-                        accelerometer.acceleration().stop();
-                        metawear.tearDown();
-                        Led led = metawear.getModule(Led.class);
-
-                        led.editPattern(Led.Color.GREEN, Led.PatternPreset.PULSE)
-                                .riseTime((short) 0)
-                                .pulseDuration((short) 1000)
-                                .repeatCount((byte) 5)
-                                .highTime((byte) 16)
-                                .lowIntensity((byte) 16)
-                                .commit();
-                        led.play();
+                led.editPattern(Led.Color.GREEN, Led.PatternPreset.PULSE)
+                        .riseTime((short) 0)
+                        .pulseDuration((short) 1000)
+                        .repeatCount((byte) 5)
+                        .highTime((byte) 16)
+                        .lowIntensity((byte) 16)
+                        .commit();
+                led.play();
 
 
-                    }
+            });
 
-
-                });
-
-            }
         });
     }
 
@@ -297,8 +277,8 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         sensorfusion = metawear.getModule(SensorFusionBosch.class);
         sensorfusion.configure()
                 .mode(SensorFusionBosch.Mode.NDOF)
-                .accRange(SensorFusionBosch.AccRange.AR_2G)
-                .gyroRange(SensorFusionBosch.GyroRange.GR_250DPS)
+                .accRange(SensorFusionBosch.AccRange.AR_16G)
+                .gyroRange(SensorFusionBosch.GyroRange.GR_500DPS)
                 .commit();
 
 
