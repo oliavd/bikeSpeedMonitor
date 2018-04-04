@@ -65,11 +65,14 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     private MetaWearBoard metawear = null;
     private FragmentSettings settings;
     private static final String TAG_ACCEL = "accelerometer";
-    private Accelerometer accelerometer;
-    private GyroBmi160 gyroscope;
+
+
     private SensorFusionBosch sensorfusion;
 
     private BarometerBosch tempModule;
+    private String totalTime,
+    avgSpeed, totalDistance;
+    private double targetSpeed;
     private Timer timerModule;
     private Timer.ScheduledTask scheduledTask;
 
@@ -162,7 +165,6 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
           });
 
-//        TextView speed_data = (TextView) view.findViewById(R.id.speed_textView);
 
 //        ((Switch) view.findViewById(R.id.led_ctrl)).setOnCheckedChangeListener((buttonView, isChecked) -> {
 //           Led led= metawear.getModule(Led.class);
@@ -181,7 +183,8 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
         view.findViewById(R.id.button_start).setOnClickListener(v -> {
 
-            view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
+
+            view.findViewById(R.id.pausebutton).setVisibility(View.VISIBLE);
 
             /*
             * Setup time chronos*/
@@ -189,9 +192,6 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             Chronometer chronos = (Chronometer) view.findViewById(R.id.elapsedTimeValue);
             chronos.setBase(SystemClock.elapsedRealtime());
             chronos.start();
-
-
-
 
             Log.i("onClickStart", "Clicked");
 
@@ -257,13 +257,13 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
                             final Acceleration value = data.value(Acceleration.class);
 
-
-
                             Log.i("{x,y,z}:",
                                     value.toString());
                             Log.i("{x}", String.format("%2f", value.x()));
                             Log.i("{y}", String.format("%2f", value.y()));
                             Log.i("{z}", String.format("%2f", value.z()));
+
+                            //TODO implement algorithms to find velocity (data generated every 10 ms
 
                         });
 //                        .to().stream((Subscriber) (data,env)-> {
@@ -289,16 +289,24 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 return null;
             });
 
+            view.findViewById(R.id.pausebutton).setOnClickListener(v2->{
+                view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
+                view.findViewById(R.id.pausebutton).setVisibility(View.INVISIBLE);
+                //TODO Set all view element appropriately
+            });
+
 
             view.findViewById(R.id.stopbutton).setOnClickListener(v1 -> {
 
                 view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
+                view.findViewById(R.id.button_start).setVisibility(View.VISIBLE);
+                //get Totaltime
+                totalTime = chronos.getText().toString();
                 //stop chronos
                 chronos.stop();
                 chronos.setBase(SystemClock.elapsedRealtime());
-                Log.i("onClickStop", "Clicked");
-                accelerometer.stop();
-                accelerometer.acceleration().stop();
+
+                Log.i("total time:",totalTime);
                 metawear.tearDown();
                 Led led = metawear.getModule(Led.class);
 
@@ -311,6 +319,34 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                         .commit();
                 led.play();
 
+
+                //getting prompt from prompt.xml view
+                LayoutInflater li = LayoutInflater.from(getContext());
+                View summaryView = li.inflate(R.layout.summary_dialog,null);
+                //Build alert dialog
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+
+                //setting summary_dialog.xml to alertDialog.Builder
+                alertDialogBuilder.setView(summaryView);
+                //get totalTime TextView
+                final TextView totalTimeView = (TextView) summaryView.findViewById(R.id.totalTimeValue),
+                targetSpeedTextView = (TextView) summaryView.findViewById(R.id.speedTargetValue);
+                totalTimeView.setText(totalTime);
+                targetSpeedTextView.setText(speedTarget.getText());
+                //set dialog message
+
+                alertDialogBuilder.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+
+                    }
+                });
+
+                //create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                //show dialog
+                alertDialog.show();
 
             });
 

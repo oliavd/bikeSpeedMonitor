@@ -19,5 +19,7 @@
     <string name="temperature">Temperature</string>
     <string name="time">Time</string>
     <string name="distance">Distance</string>
+    <string name="summary">SUMMARY</string>
+    <string name="pause">PAUSE</string>
 
 </resources>
