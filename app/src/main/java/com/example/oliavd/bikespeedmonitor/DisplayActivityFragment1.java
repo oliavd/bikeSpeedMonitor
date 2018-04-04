@@ -2,12 +2,15 @@ package com.example.oliavd.bikespeedmonitor;
 
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.os.Vibrator;
 import android.view.ViewGroup;
+import android.widget.Chronometer;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -31,6 +36,7 @@ import com.mbientlab.metawear.builder.filter.ThresholdOutput;
 import com.mbientlab.metawear.builder.function.Function1;
 import com.mbientlab.metawear.data.Acceleration;
 import com.mbientlab.metawear.module.Accelerometer;
+import com.mbientlab.metawear.module.BarometerBosch;
 import com.mbientlab.metawear.module.Debug;
 import com.mbientlab.metawear.module.Led;
 import com.mbientlab.metawear.module.Logging;
@@ -42,6 +48,8 @@ import bolts.Task;
 import com.mbientlab.metawear.module.GyroBmi160;
 import com.mbientlab.metawear.module.SensorFusionBosch;
 import com.mbientlab.metawear.data.*;
+import com.mbientlab.metawear.module.Temperature;
+import com.mbientlab.metawear.module.Timer;
 
 import java.util.Arrays;
 
@@ -60,6 +68,10 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     private Accelerometer accelerometer;
     private GyroBmi160 gyroscope;
     private SensorFusionBosch sensorfusion;
+
+    private BarometerBosch tempModule;
+    private Timer timerModule;
+    private Timer.ScheduledTask scheduledTask;
 
 
 
@@ -107,9 +119,49 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         );
         super.onViewCreated(view, savedInstanceState);
 
-        TextView accel_data = view.findViewById(R.id.accel_textView);
 
-//        TextView distance_data = (TextView) view.findViewById(R.id.distance_textView);
+
+
+
+        TextView speedTarget = (TextView) view.findViewById(R.id.speedTargetValueTextView);
+
+        speedTarget.setOnClickListener(v->{
+
+              //getting prompt from prompt.xml view
+              LayoutInflater li = LayoutInflater.from(getContext());
+              View promptView = li.inflate(R.layout.prompt,null);
+              //Build alert dialog
+              AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+
+              //setting prompt.xml to alertDialg.Builder
+              alertDialogBuilder.setView(promptView);
+               //get UserInput
+              final EditText userInput = (EditText) promptView.findViewById(R.id.editTextDialogUserInput);
+
+              //set dialg message
+
+              alertDialogBuilder.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialogInterface, int i) {
+
+
+                      speedTarget.setText(userInput.getText());
+
+                  }
+              }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface dialogInterface, int i) {
+                      dialogInterface.cancel();
+                  }
+              });
+
+              //create alert dialog
+              AlertDialog alertDialog = alertDialogBuilder.create();
+              //show dialog
+              alertDialog.show();
+
+          });
+
 //        TextView speed_data = (TextView) view.findViewById(R.id.speed_textView);
 
 //        ((Switch) view.findViewById(R.id.led_ctrl)).setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -127,9 +179,19 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 //           }
 //        });
 
-        view.findViewById(R.id.button_activity_ctrl).setOnClickListener(v -> {
+        view.findViewById(R.id.button_start).setOnClickListener(v -> {
 
             view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
+
+            /*
+            * Setup time chronos*/
+
+            Chronometer chronos = (Chronometer) view.findViewById(R.id.elapsedTimeValue);
+            chronos.setBase(SystemClock.elapsedRealtime());
+            chronos.start();
+
+
+
 
             Log.i("onClickStart", "Clicked");
 
@@ -231,7 +293,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             view.findViewById(R.id.stopbutton).setOnClickListener(v1 -> {
 
                 view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
-
+                //stop chronos
+                chronos.stop();
+                chronos.setBase(SystemClock.elapsedRealtime());
                 Log.i("onClickStop", "Clicked");
                 accelerometer.stop();
                 accelerometer.acceleration().stop();
@@ -263,16 +327,19 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
-        accelerometer = metawear.getModule(Accelerometer.class);
-        accelerometer.configure()
-                .odr(50f)
-                .commit();
 
-        gyroscope = metawear.getModule(GyroBmi160.class);
-        gyroscope.configure()
-                .odr(GyroBmi160.OutputDataRate.ODR_50_HZ)
-                .range(GyroBmi160.Range.FSR_2000)
-                .commit();
+        tempModule = metawear.getModule(BarometerBosch.class);
+
+//        accelerometer = metawear.getModule(Accelerometer.class);
+//        accelerometer.configure()
+//                .odr(50f)
+//                .commit();
+
+//        gyroscope = metawear.getModule(GyroBmi160.class);
+//        gyroscope.configure()
+//                .odr(GyroBmi160.OutputDataRate.ODR_50_HZ)
+//                .range(GyroBmi160.Range.FSR_2000)
+//                .commit();
 
         sensorfusion = metawear.getModule(SensorFusionBosch.class);
         sensorfusion.configure()
@@ -280,6 +347,8 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 .accRange(SensorFusionBosch.AccRange.AR_16G)
                 .gyroRange(SensorFusionBosch.GyroRange.GR_500DPS)
                 .commit();
+
+
 
 
     }

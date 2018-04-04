@@ -6,16 +6,18 @@
     <string name="title_activity_main">Bike Speed Monitor</string>
     <string name="title_connecting">Connecting</string>
     <string name="title_reconnect_attempt">Reconnecting</string>
-    <string name="message_wait">Please wait</string>
+    <string name="message_wait">Please Wait</string>
+    <string name="speed_target_label">Speed Target</string>
+    <string name="speed_target_value_default">-</string>
 
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="workout_data_stream">LOREM EPSUM</string>
+
     <string name="button_activity_control">START</string>
     <string name="stop_button">STOP</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment_sensor_data</string>
     <string name="todo">Todo</string>
+    <string name="current_speed">Current Speed</string>
+    <string name="temperature">Temperature</string>
+    <string name="time">Time</string>
+    <string name="distance">Distance</string>
 
 </resources>

@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -22,7 +23,7 @@ import bolts.Continuation;
 
 import static android.content.DialogInterface.*;
 
-public class DisplayActivity extends AppCompatActivity implements ServiceConnection, FragmentSettings {
+public class DisplayActivity extends AppCompatActivity implements ServiceConnection, FragmentSettings, DistanceFragment.OnFragmentInteractionListener {
     public final static String EXTRA_BT_DEVICE= "com.example.oliavd.DisplayActivity.EXTRA_BT_DEVICE";
 
     public static class ReconnectDialogFragment extends DialogFragment implements  ServiceConnection {
@@ -138,6 +139,10 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
     }
 
 
+    @Override
+    public void onFragmentInteraction(Uri uri){
+
+    }
 
 
     @Override
