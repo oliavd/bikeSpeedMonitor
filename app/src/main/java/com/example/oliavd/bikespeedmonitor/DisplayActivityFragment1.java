@@ -69,10 +69,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
     private SensorFusionBosch sensorfusion;
 
-    private BarometerBosch tempModule;
+    private Temperature.Sensor tempSensor;
     private String totalTime,
     avgSpeed, totalDistance;
-    private double targetSpeed;
     private Timer timerModule;
     private Timer.ScheduledTask scheduledTask;
 
@@ -121,9 +120,6 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 "onViewCreated","View Created"
         );
         super.onViewCreated(view, savedInstanceState);
-
-
-
 
 
         TextView speedTarget = (TextView) view.findViewById(R.id.speedTargetValueTextView);
@@ -184,7 +180,15 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         view.findViewById(R.id.button_start).setOnClickListener(v -> {
 
 
-            view.findViewById(R.id.pausebutton).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
+
+            /*stream temperature with board
+            *
+             */
+
+            //TODO stream temperature from temperature sensor
+
+
 
             /*
             * Setup time chronos*/
@@ -264,6 +268,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                             Log.i("{z}", String.format("%2f", value.z()));
 
                             //TODO implement algorithms to find velocity (data generated every 10 ms
+                    //TODO use haptic feedback to vibrate board when velocity less than speedTarget
 
                         });
 //                        .to().stream((Subscriber) (data,env)-> {
@@ -292,7 +297,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             view.findViewById(R.id.pausebutton).setOnClickListener(v2->{
                 view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.pausebutton).setVisibility(View.INVISIBLE);
-                //TODO Set all view element appropriately
+                //TODO Set all view element appropriately if i decide to implement a pause button
             });
 
 
@@ -354,28 +359,11 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     }
 
 
-
-
-
-
-
-
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
 
-        tempModule = metawear.getModule(BarometerBosch.class);
 
-//        accelerometer = metawear.getModule(Accelerometer.class);
-//        accelerometer.configure()
-//                .odr(50f)
-//                .commit();
-
-//        gyroscope = metawear.getModule(GyroBmi160.class);
-//        gyroscope.configure()
-//                .odr(GyroBmi160.OutputDataRate.ODR_50_HZ)
-//                .range(GyroBmi160.Range.FSR_2000)
-//                .commit();
 
         sensorfusion = metawear.getModule(SensorFusionBosch.class);
         sensorfusion.configure()
@@ -383,10 +371,6 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 .accRange(SensorFusionBosch.AccRange.AR_16G)
                 .gyroRange(SensorFusionBosch.GyroRange.GR_500DPS)
                 .commit();
-
-
-
-
     }
 
 
