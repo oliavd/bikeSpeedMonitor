@@ -22,22 +22,7 @@
         app:layout_constraintVertical_bias="1.0"
         tools:layout="@layout/fragment_display_activity1" />
 
-    <fragment
-        android:id="@+id/distance_fragment"
-        android:name="com.example.oliavd.bikespeedmonitor.DistanceFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.689"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/fragment_display_activity_1"
-        app:layout_constraintVertical_bias="0.586"
-        tools:layout="@layout/fragment_distance" />
+
 
 
 </android.support.constraint.ConstraintLayout>

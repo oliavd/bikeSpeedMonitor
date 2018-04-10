@@ -1,18 +1,26 @@
 package com.example.oliavd.bikespeedmonitor;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +30,11 @@ import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.mbientlab.metawear.CodeBlock;
 import com.mbientlab.metawear.Data;
+import com.mbientlab.metawear.ForcedDataProducer;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.Route;
 import com.mbientlab.metawear.Subscriber;
@@ -65,15 +76,14 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     private MetaWearBoard metawear = null;
     private FragmentSettings settings;
     private static final String TAG_ACCEL = "accelerometer";
-
-
     private SensorFusionBosch sensorfusion;
-
     private Temperature.Sensor tempSensor;
+    private Temperature tempModule;
     private String totalTime,
     avgSpeed, totalDistance;
     private Timer timerModule;
-    private Timer.ScheduledTask scheduledTask;
+
+    private TextView distanceValue;
 
 
 
@@ -97,12 +107,14 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
 
         ///< Unbind the service when the activity is destroyed
         getActivity().getApplicationContext().unbindService(this);
+
     }
 
     @Override
@@ -116,10 +128,18 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+
+
         Log.i(
                 "onViewCreated","View Created"
         );
+
+
         super.onViewCreated(view, savedInstanceState);
+
+        distanceValue = (TextView) view.findViewById(R.id.distanceValueTextView);
+
+
 
 
         TextView speedTarget = (TextView) view.findViewById(R.id.speedTargetValueTextView);
@@ -162,31 +182,42 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
           });
 
 
-//        ((Switch) view.findViewById(R.id.led_ctrl)).setOnCheckedChangeListener((buttonView, isChecked) -> {
-//           Led led= metawear.getModule(Led.class);
-//            if (isChecked) {
-//               Log.i(
-//                       "onViewCreated","isChecked"
-//                );
-//              led.editPattern(Led.Color.BLUE, Led.PatternPreset.PULSE)
-//                       .repeatCount(Led.PATTERN_REPEAT_INDEFINITELY)
-//                      .commit();
-//               led.play();
-//           } else {
-//               led.stop(true);
-//           }
-//        });
+        view.findViewById(R.id.button_start).setOnClickListener((View v) -> {
 
-        view.findViewById(R.id.button_start).setOnClickListener(v -> {
+
 
 
             view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
 
-            /*stream temperature with board
-            *
+            /*
+            *   stream temperature with board
              */
 
-            //TODO stream temperature from temperature sensor
+
+            TextView tempVal = view.findViewById(R.id.tempValueTextView);
+
+            //Schedule temp reading task for every x ms
+
+           tempSensor.addRouteAsync(source -> {
+               source.stream(((data, env) -> {
+                   final Float celsius = data.value(Float.class);
+                   Log.i("temp",celsius.toString());
+                   getActivity().runOnUiThread(() -> {
+                       tempVal.setText(getString(R.string.celsius,celsius.toString()));
+                   });
+               }));
+           })
+
+                   .onSuccessTask(ignored-> timerModule.scheduleAsync(5000,false,tempSensor::read))
+                   .continueWithTask((Task<Timer.ScheduledTask> task) -> {
+                       if (task.isFaulted()){
+                           Log.w("tempRead","Task Failed",task.getError());
+                       }else{
+                           Log.i("tempRead","Ready");
+                           task.getResult().start();
+                       }
+                       return null;
+                   });
 
 
 
@@ -199,59 +230,6 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
             Log.i("onClickStart", "Clicked");
 
-//                accelerometer.acceleration().addRouteAsync(new RouteBuilder() {
-//
-//                    @Override
-//                    public void configure(RouteComponent source) {
-//
-//                        source.highpass((byte) 4).lowpass((byte) 4).multicast()
-//
-//                                .to().stream(new Subscriber() {
-//                            @Override
-//                            public void apply(Data data, Object... env) {
-//                                Log.i(TAG_ACCEL+" {x,y,z} ",data.value(Acceleration.class).toString());
-//                            }
-//                        }).to().split().index(0).stream(new Subscriber() {
-//
-//                                    @Override
-//                                    public void apply(Data data, Object... env) {
-//
-//                                        Log.i( TAG_ACCEL+" x: ", data.value(Float.class).toString());
-//
-////                                        getActivity().runOnUiThread(new Runnable() {
-////                                            @Override
-////                                            public void run() {
-////
-////                                                //accel_data.setText(data.value(Acceleration.class).toString());
-////                                                accel_data.setText(String.format("%2f", data.value(Float.class)));
-////                                            }
-////                                        });
-//
-//                                    }
-//                        }).to().split().index(1).stream(new Subscriber() {
-//                            @Override
-//                            public void apply(Data data, Object... env) {
-//
-//                                Log.i(TAG_ACCEL + " y: ", data.value(Float.class).toString());
-//
-//                            }
-//
-//                        }).to().split().index(2).stream(new Subscriber() {
-//                            @Override
-//                            public void apply(Data data, Object... env) {
-//                                Log.i(TAG_ACCEL+" z: ",data.value(Float.class).toString());
-//                            }
-//                        });
-//                    }
-//
-//                }).continueWith(new Continuation<Route, Void>() {
-//                    @Override
-//                    public Void then(Task<Route> task) throws Exception {
-//                        accelerometer.acceleration().start();
-//                        accelerometer.start();
-//                        return null;
-//                    }
-//                });
 
             sensorfusion.linearAcceleration().addRouteAsync(source -> {
 
@@ -305,6 +283,8 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
                 view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
                 view.findViewById(R.id.button_start).setVisibility(View.VISIBLE);
+
+
                 //get Totaltime
                 totalTime = chronos.getText().toString();
                 //stop chronos
@@ -363,14 +343,17 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
 
-
-
         sensorfusion = metawear.getModule(SensorFusionBosch.class);
         sensorfusion.configure()
                 .mode(SensorFusionBosch.Mode.NDOF)
                 .accRange(SensorFusionBosch.AccRange.AR_16G)
                 .gyroRange(SensorFusionBosch.GyroRange.GR_500DPS)
                 .commit();
+
+        metawear.getModule(BarometerBosch.class).start();
+        tempModule = metawear.getModule(Temperature.class);
+        tempSensor = tempModule.findSensors(Temperature.SensorType.BOSCH_ENV)[0];
+        timerModule = metawear.getModule(Timer.class);
     }
 
 

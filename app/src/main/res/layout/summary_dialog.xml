@@ -25,7 +25,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="40dp"
-        android:text="Total Distance"
+        android:text="@string/total_distance"
         app:layout_constraintEnd_toStartOf="@+id/totalDistanceValue"
         app:layout_constraintHorizontal_bias="0.321"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,7 +38,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="TotalTime"
+        android:text="@string/totaltime"
         app:layout_constraintBottom_toBottomOf="@+id/totalTimeValue"
         app:layout_constraintEnd_toStartOf="@+id/totalTimeValue"
         app:layout_constraintHorizontal_bias="0.316"
@@ -53,7 +53,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Avg. Speed"
+        android:text="@string/avg_speed"
         app:layout_constraintBottom_toBottomOf="@+id/avgSpeedValue"
         app:layout_constraintEnd_toStartOf="@+id/avgSpeedValue"
         app:layout_constraintHorizontal_bias="0.318"
@@ -68,7 +68,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
-        android:text="Good Job!"
+        android:text="@string/good_job"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/summaryTextView" />
@@ -78,7 +78,7 @@
         android:layout_width="136dp"
         android:layout_height="25dp"
         android:layout_marginEnd="16dp"
-        android:text="test"
+        android:text="@string/test"
         app:layout_constraintBottom_toBottomOf="@+id/totalDistanceTextView"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -88,7 +88,7 @@
         android:layout_height="26dp"
         android:layout_marginEnd="20dp"
         android:layout_marginTop="8dp"
-        android:text="test"
+        android:text="@string/test"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/totalDistanceValue" />
 
@@ -97,9 +97,9 @@
         android:layout_width="137dp"
         android:layout_height="29dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
+
         android:layout_marginTop="8dp"
-        android:text="test"
+        android:text="@string/test"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/totalTimeValue" />
@@ -111,7 +111,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Target Speed"
+        android:text="@string/target_speed"
         app:layout_constraintBottom_toBottomOf="@+id/speedTargetValue"
         app:layout_constraintEnd_toStartOf="@+id/speedTargetValue"
         app:layout_constraintHorizontal_bias="0.293"
@@ -125,7 +125,7 @@
         android:layout_height="27dp"
         android:layout_marginEnd="28dp"
         android:layout_marginTop="8dp"
-        android:text="test"
+        android:text="@string/test"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/avgSpeedValue" />
 

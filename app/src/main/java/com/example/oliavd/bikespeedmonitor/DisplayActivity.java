@@ -1,19 +1,28 @@
 package com.example.oliavd.bikespeedmonitor;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.android.BtleService;
@@ -23,8 +32,11 @@ import bolts.Continuation;
 
 import static android.content.DialogInterface.*;
 
-public class DisplayActivity extends AppCompatActivity implements ServiceConnection, FragmentSettings, DistanceFragment.OnFragmentInteractionListener {
+public class DisplayActivity extends AppCompatActivity implements ServiceConnection, FragmentSettings {
     public final static String EXTRA_BT_DEVICE= "com.example.oliavd.DisplayActivity.EXTRA_BT_DEVICE";
+
+
+
 
     public static class ReconnectDialogFragment extends DialogFragment implements  ServiceConnection {
         private static final String KEY_BLUETOOTH_DEVICE = "com.example.oliavd.DisplayActivity.ReconnectDialogFragment.KEY_BLUETOOTH_DEVICE";
@@ -85,6 +97,7 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
 
         btDevice= getIntent().getParcelableExtra(EXTRA_BT_DEVICE);
         getApplicationContext().bindService(new Intent(this, BtleService.class), this, BIND_AUTO_CREATE);
+
     }
 
     @Override
@@ -138,11 +151,6 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
 
     }
 
-
-    @Override
-    public void onFragmentInteraction(Uri uri){
-
-    }
 
 
     @Override

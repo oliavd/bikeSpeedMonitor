@@ -214,17 +214,31 @@
 
     <TextView
         android:id="@+id/tempValueTextView"
-        android:layout_width="63dp"
+        android:layout_width="154dp"
         android:layout_height="35dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="112dp"
+        android:layout_marginEnd="68dp"
         android:gravity="center"
         android:text="@string/speed_target_value_default"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/bottom_divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bottom_divider4"
-        app:layout_constraintVertical_bias="0.58000004" />
+        app:layout_constraintVertical_bias="0.648" />
+
+    <TextView
+        android:id="@+id/distanceValueTextView"
+        android:layout_width="154dp"
+        android:layout_height="35dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="68dp"
+        android:gravity="center"
+        android:text="@string/speed_target_value_default"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_divider4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bottom_divider3"
+        app:layout_constraintVertical_bias="0.432" />
 
     <Chronometer
         android:id="@+id/elapsedTimeValue"
