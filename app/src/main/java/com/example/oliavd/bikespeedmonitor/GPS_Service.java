@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -46,11 +47,11 @@ public class GPS_Service extends Service {
                 if (last_loc == null){
                     last_loc = location;
                 }
-                distance_meters+=location.distanceTo(last_loc);
+                distance_meters += location.distanceTo(last_loc);
                 last_loc = location;
 
                 Intent i = new Intent("distance updates");
-                i.putExtra("distance",getMiles());
+                i.putExtra("distance",distance_meters);
                 sendBroadcast(i);
 
 
@@ -84,7 +85,7 @@ public class GPS_Service extends Service {
             locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,locListener);
 
         }catch (SecurityException se){
-
+            Log.w("error",se);
         }
     }
 
@@ -94,11 +95,6 @@ public class GPS_Service extends Service {
         if (locManager!=null){
             locManager.removeUpdates(locListener);
         }
-    }
-
-    public double getMiles(){
-        return this.distance_meters/1000;
-
     }
 
     public GPS_Service(){

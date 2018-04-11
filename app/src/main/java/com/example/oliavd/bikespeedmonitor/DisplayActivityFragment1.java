@@ -62,6 +62,7 @@ import com.mbientlab.metawear.data.*;
 import com.mbientlab.metawear.module.Temperature;
 import com.mbientlab.metawear.module.Timer;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 /**
@@ -82,8 +83,11 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     private String totalTime,
     avgSpeed, totalDistance;
     private Timer timerModule;
+    private double vx, vy, vz, vel = 0;
+    private int countx, county, countz;
 
     private TextView distanceValue;
+
 
 
 
@@ -184,6 +188,14 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
         view.findViewById(R.id.button_start).setOnClickListener((View v) -> {
 
+            //initialize vx,vy,vz, countx,county,countz
+            vx=0;
+            vy=0;
+            vz=0;
+            vel=0;
+            countx=0;
+            county=0;
+            countz=0;
 
 
 
@@ -219,16 +231,17 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                        return null;
                    });
 
-
-
             /*
-            * Setup time chronos*/
+            * Setup time chronometer
+            */
 
             Chronometer chronos = (Chronometer) view.findViewById(R.id.elapsedTimeValue);
             chronos.setBase(SystemClock.elapsedRealtime());
             chronos.start();
 
             Log.i("onClickStart", "Clicked");
+
+            TextView velTextView = view.findViewById(R.id.currentSpeedValueTextView);
 
 
             sensorfusion.linearAcceleration().addRouteAsync(source -> {
@@ -241,14 +254,72 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
                             Log.i("{x,y,z}:",
                                     value.toString());
-                            Log.i("{x}", String.format("%2f", value.x()));
-                            Log.i("{y}", String.format("%2f", value.y()));
-                            Log.i("{z}", String.format("%2f", value.z()));
+                            Log.i("{x}", String.format("%.1f", value.x()));
+                            Log.i("{y}", String.format("%.1f", value.y()));
+                            Log.i("{z}", String.format("%.1f", value.z()));
 
                             //TODO implement algorithms to find velocity (data generated every 10 ms
+                            vx+=roundAvoid(value.x(),1) * 0.01;
+                            vy+=roundAvoid(value.y(),1) * 0.01;
+                            vz+=roundAvoid(value.z(),1) * 0.01;
+
+                        Log.i("{Vx}", String.format("%.1f" +
+                                "", vx));
+                        Log.i("{Vy}", String.format("%.1f", vy));
+                        Log.i("{Vz}", String.format("%.1f", vz));
+
+                        /*Combine speed*/
+                        vel = Math.sqrt(Math.pow(vx,2)+Math.pow(vy,2)+Math.pow(vz,2));
+
+                        Log.i("V",String.format("%.1f",vel));
+
+
+
+                        /*
+                        Movement end check
+                         */
+
+                        if (roundAvoid(value.x(),1) == 0.0){
+                            countx++;
+                        }else{
+                            countx=0;
+                        }
+
+                        if (countx>=25){
+                            vx = 0;
+                        }
+
+                        if (roundAvoid(value.y(),1) == 0.0){
+                            county++;
+                        }else{
+                            county=0;
+                        }
+
+                        if (countx>=25){
+                            vy = 0;
+                        }
+
+                        if (roundAvoid(value.z(),1) == 0.0){
+                            countz++;
+                        }else{
+                            countz=0;
+                        }
+
+                        if (countz>=25){
+                            vz = 0;
+                        }
+
+                    getActivity().runOnUiThread(() -> {
+                        velTextView.setText(getString(R.string.current_speed_value,String.format("%.1f",vel)));
+                    });
+
+
                     //TODO use haptic feedback to vibrate board when velocity less than speedTarget
 
+
+
                         });
+
 //                        .to().stream((Subscriber) (data,env)-> {
 //
 //
@@ -369,4 +440,13 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     public void reconnected() {
 
     }
+
+    public static double roundAvoid(double value, int places) {
+        double scale = Math.pow(10, places);
+        return Math.round(value * scale) / scale;
+    }
+
+
+
+
 }
