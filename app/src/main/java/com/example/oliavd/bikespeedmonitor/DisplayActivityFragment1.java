@@ -87,6 +87,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     avgSpeed;
     private Timer timerModule;
     private double vx, vy, vz, vel = 0,targetSpeed=0;
+    //used for movement_end_check
     private int countx, county, countz;
     private GPS_Service odometer;
     private boolean bound = false;
@@ -98,6 +99,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     public DisplayActivityFragment1() {
     }
 
+    /*
+    Create a Service Connection to bing to the GPS_Service
+     */
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -168,12 +172,16 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         super.onViewCreated(view, savedInstanceState);
 
         /*
-        Log distance from .GPS_Service
+        TextView holding the distance value form the GPS_Service
          */
         distanceValue = (TextView) view.findViewById(R.id.distanceValueTextView);
 
         //create handler for .gps_service thread
         final Handler handler = new Handler();
+
+        /*
+        Handle User Input of Threshold speed value
+         */
 
         TextView speedTarget = (TextView) view.findViewById(R.id.speedTargetValueTextView);
 
@@ -190,7 +198,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                //get UserInput
               final EditText userInput = (EditText) promptView.findViewById(R.id.editTextDialogUserInput);
 
-              //set dialg message
+              //set dialog message
 
               alertDialogBuilder.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
                   @Override
@@ -218,8 +226,24 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
           });
 
+        /*
+        Handles when the user click the start button
+         */
+
         view.findViewById(R.id.button_start).setOnClickListener((View v) -> {
 
+            Led led = metawear.getModule(Led.class);
+
+            led.editPattern(Led.Color.GREEN, Led.PatternPreset.PULSE)
+                    .riseTime((short) 0)
+                    .pulseDuration((short) 1000)
+                    .repeatCount((byte) 5)
+                    .highTime((byte) 16)
+                    .lowIntensity((byte) 16)
+                    .commit();
+            led.play();
+
+            //make stop button visible
             view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
              /*
              Bind to .GPS_Service
@@ -229,7 +253,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
             Log.i("onClickStart", "Clicked");
 
-
+            //handle schedule reading from GPS_Service and update UI every 3000 ms
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -243,7 +267,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 }
             });
 
-            //initialize vx,vy,vz, countx,county,countz
+            //initialize vx,vy,vz, countx,county,countz.
             vx=0;
             vy=0;
             vz=0;
@@ -292,6 +316,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
 
             TextView velTextView = view.findViewById(R.id.currentSpeedValueTextView);
+            /*
+            Add a route for streaming linear acceleration from board
+             */
 
             sensorfusion.linearAcceleration().addRouteAsync(source -> {
 
@@ -325,7 +352,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
 
                         /*
-                        Movement end check
+                        Movement end check: if next 25 samples are 0.0 then movement_end detected
                          */
 
                         if (roundAvoid(value.x(),1) == 0.0){
@@ -364,8 +391,10 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                         velTextView.setText(getString(R.string.current_speed_value,String.format("%.1f",vel)));
                     });
 
-                    //TODO use haptic feedback to vibrate board when velocity less than speedTarget
+                    //get target speed from Speed target TextView and convert to double
                     targetSpeed = Double.parseDouble(speedTarget.getText().toString());
+
+                    //Compare to current vel and initiate haptic motor if lower
                    if (vel < targetSpeed){
 
                        Log.i("test","under target speed");
@@ -405,12 +434,16 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 //TODO Set all view element appropriately if i decide to implement a pause button
             });
 
-
+            /*
+            Stop button clicked
+             */
             view.findViewById(R.id.stopbutton).setOnClickListener(v1 -> {
 
                 view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
                 view.findViewById(R.id.button_start).setVisibility(View.VISIBLE);
 
+                //trying to clean up
+                //remove all callbacks and message from handler
                 handler.removeCallbacksAndMessages(null);
                 odometer.removeUpdates();
                 if (bound){
@@ -422,15 +455,17 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 //get Total time
                 totalTime = chronos.getText().toString();
 
-                //stop chronos
+                //stop chronometer
                 chronos.stop();
                 chronos.setBase(SystemClock.elapsedRealtime());
 
                 Log.i("total time:",totalTime);
                 metawear.tearDown();
-                Led led = metawear.getModule(Led.class);
+                /*
+                Led showing that workout stopped
+                 */
 
-                led.editPattern(Led.Color.GREEN, Led.PatternPreset.PULSE)
+                led.editPattern(Led.Color.RED, Led.PatternPreset.PULSE)
                         .riseTime((short) 0)
                         .pulseDuration((short) 1000)
                         .repeatCount((byte) 5)
@@ -438,7 +473,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                         .lowIntensity((byte) 16)
                         .commit();
                 led.play();
-
+                /*
+                Display a summary dialog box with some metrics
+                 */
 
                 //getting prompt from prompt.xml view
                 LayoutInflater li = LayoutInflater.from(getContext());
@@ -478,7 +515,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
-
+        /*
+        Get required module from board
+         */
         sensorfusion = metawear.getModule(SensorFusionBosch.class);
         sensorfusion.configure()
                 .mode(SensorFusionBosch.Mode.NDOF)
@@ -522,16 +561,19 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     public void reconnected() {
 
     }
+    /*
+    Offset linear Acceleration values because no calibration present on the sensor fusion algorithm of board
+     */
 
     public static double roundAvoid(double value, int places) {
         double scale = Math.pow(10, places);
         return Math.round(value * scale) / scale;
     }
 
-    private void getDistance(){
-
-
-
-    }
+//    private void getDistance(){
+//
+//
+//
+//    }
 
 }

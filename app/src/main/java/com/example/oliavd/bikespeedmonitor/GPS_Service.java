@@ -22,8 +22,9 @@ import android.widget.Toast;
 import static android.support.v4.app.ActivityCompat.requestPermissions;
 
 /**
- * Created by oliavd on 4/9/18.
+ * GPS Service uses locationManager to get distance travelled in meter
  */
+
 
 
 public class GPS_Service extends Service {
@@ -51,12 +52,13 @@ public class GPS_Service extends Service {
 
         locListener = new LocationListener() {
             @Override
-            public void onLocationChanged(Location location) {
+            public void onLocationChanged(Location newlocation) {
+
                 if (last_loc == null){
-                    last_loc = location;
+                    last_loc = newlocation;
                 }
-                distance_meters += location.distanceTo(last_loc);
-                last_loc = location;
+                distance_meters += newlocation.distanceTo(last_loc);
+                last_loc = newlocation;
 
 
             }

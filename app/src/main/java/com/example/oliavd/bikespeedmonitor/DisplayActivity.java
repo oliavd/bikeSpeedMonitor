@@ -37,8 +37,11 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
 
 
 
-
+    /*
+    Fragment showing when board is reconnecting to phone
+     */
     public static class ReconnectDialogFragment extends DialogFragment implements  ServiceConnection {
+
         private static final String KEY_BLUETOOTH_DEVICE = "com.example.oliavd.DisplayActivity.ReconnectDialogFragment.KEY_BLUETOOTH_DEVICE";
 
         private ProgressDialog reconnectDialog = null;
@@ -84,6 +87,8 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
         public void onServiceDisconnected(ComponentName name) { }
     }
 
+
+
     private BluetoothDevice btDevice;
     private MetaWearBoard metawear;
 
@@ -108,7 +113,9 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
+    /*
+    handle when user wants to disconnect the board
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
@@ -126,6 +133,10 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
         metawear.disconnectAsync();
         super.onBackPressed();
     }
+
+    /*
+    When service has reconnected, this method make sure it is bound to fragment_display_activity_1
+     */
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {

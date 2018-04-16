@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Bike Speed Monitor</string>
+    <string name="app_name">Bike Coach</string>
     <string name="title_activity_display">Dashboard</string>
 
     <string name="action_disconnect">Disconnect</string>

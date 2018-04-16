@@ -24,15 +24,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
     public static final int REQUEST_START_APP= 1;
-
+    //Define Ble Binder
     private BtleService.LocalBinder myServiceBinder;
+
     private MetaWearBoard metawear;
-    //private String TAG  = "MetaWear";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Bind activity to BleService
         getApplicationContext().bindService(new Intent(this,BtleService.class),this,BIND_AUTO_CREATE);
     }
 
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //Handle Ble device scan
         switch(requestCode) {
             case REQUEST_START_APP:
                 ((BleScannerFragment) getFragmentManager().findFragmentById(R.id.scanner_fragment)).startBleScan();
@@ -55,15 +58,25 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     }
 
+    /*
+    Make sure only metawear devices are found. Can be used to only return desired metawear device
+     */
+
     @Override
     public UUID[] getFilterServiceUuids() {
         return new UUID[] {MetaWearBoard.METAWEAR_GATT_SERVICE};
     }
 
+    /*
+    Specify scan duration
+     */
     @Override
     public long getScanDuration() {
         return 10000L;
     }
+    /*
+    Connect to the selected device and start intent for DisplayActivity
+     */
 
     @Override
     public void onDeviceSelected(final BluetoothDevice device) {
