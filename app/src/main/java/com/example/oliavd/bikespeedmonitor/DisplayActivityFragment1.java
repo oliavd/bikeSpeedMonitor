@@ -14,9 +14,11 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -61,6 +63,7 @@ import com.mbientlab.metawear.module.SensorFusionBosch;
 import com.mbientlab.metawear.data.*;
 import com.mbientlab.metawear.module.Temperature;
 import com.mbientlab.metawear.module.Timer;
+import com.mbientlab.metawear.module.Haptic;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -81,11 +84,12 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     private Temperature.Sensor tempSensor;
     private Temperature tempModule;
     private String totalTime,
-    avgSpeed, totalDistance;
+    avgSpeed;
     private Timer timerModule;
-    private double vx, vy, vz, vel = 0;
+    private double vx, vy, vz, vel = 0,targetSpeed=0;
     private int countx, county, countz;
-
+    private GPS_Service odometer;
+    private boolean bound = false;
     private TextView distanceValue;
 
 
@@ -93,6 +97,20 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
     public DisplayActivityFragment1() {
     }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            GPS_Service.GPS_ServiceBinder gpsBinder = (GPS_Service.GPS_ServiceBinder) service;
+            odometer = gpsBinder.getGPService();
+            bound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            bound = false;
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,6 +126,16 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         settings= (FragmentSettings) owner;
         owner.getApplicationContext().bindService(new Intent(owner, BtleService.class), this, Context.BIND_AUTO_CREATE);
 
+         /*
+        Check permissions for Location Service
+         */
+
+
+        if(Build.VERSION.SDK_INT >=23 && ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 100);
+
+        }
 
     }
 
@@ -133,18 +161,19 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
 
-
         Log.i(
                 "onViewCreated","View Created"
         );
 
-
         super.onViewCreated(view, savedInstanceState);
 
+        /*
+        Log distance from .GPS_Service
+         */
         distanceValue = (TextView) view.findViewById(R.id.distanceValueTextView);
 
-
-
+        //create handler for .gps_service thread
+        final Handler handler = new Handler();
 
         TextView speedTarget = (TextView) view.findViewById(R.id.speedTargetValueTextView);
 
@@ -156,7 +185,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
               //Build alert dialog
               AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
 
-              //setting prompt.xml to alertDialg.Builder
+              //setting prompt.xml to alertDialog.Builder
               alertDialogBuilder.setView(promptView);
                //get UserInput
               final EditText userInput = (EditText) promptView.findViewById(R.id.editTextDialogUserInput);
@@ -183,10 +212,36 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
               //show dialog
               alertDialog.show();
 
+              targetSpeed = Double.parseDouble(speedTarget.getText().toString());
+
+
+
           });
 
-
         view.findViewById(R.id.button_start).setOnClickListener((View v) -> {
+
+            view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
+             /*
+             Bind to .GPS_Service
+         */
+            Intent intent = new Intent(getActivity(),GPS_Service.class);
+            getActivity().bindService(intent,connection,Context.BIND_AUTO_CREATE);
+
+            Log.i("onClickStart", "Clicked");
+
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    double distance = 0.0;
+                    if (odometer!=null){
+                        distance = odometer.getDistance_meters();
+                    }
+                    distanceValue.setText(String.format("%1$,.2f m",distance));
+                    Log.i("distance",String.format("%1$,.2f m",distance));
+                    handler.postDelayed(this,3000);
+                }
+            });
 
             //initialize vx,vy,vz, countx,county,countz
             vx=0;
@@ -197,14 +252,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             county=0;
             countz=0;
 
-
-
-            view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
-
             /*
             *   stream temperature with board
              */
-
 
             TextView tempVal = view.findViewById(R.id.tempValueTextView);
 
@@ -239,10 +289,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             chronos.setBase(SystemClock.elapsedRealtime());
             chronos.start();
 
-            Log.i("onClickStart", "Clicked");
+
 
             TextView velTextView = view.findViewById(R.id.currentSpeedValueTextView);
-
 
             sensorfusion.linearAcceleration().addRouteAsync(source -> {
 
@@ -309,14 +358,19 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                             vz = 0;
                         }
 
+                    //vel = vel / 0.01;
+
                     getActivity().runOnUiThread(() -> {
                         velTextView.setText(getString(R.string.current_speed_value,String.format("%.1f",vel)));
                     });
 
-
                     //TODO use haptic feedback to vibrate board when velocity less than speedTarget
+                    targetSpeed = Double.parseDouble(speedTarget.getText().toString());
+                   if (vel < targetSpeed){
 
-
+                       Log.i("test","under target speed");
+                       metawear.getModule(Haptic.class).startBuzzer((short) 500);
+                   }
 
                         });
 
@@ -343,6 +397,8 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 return null;
             });
 
+
+
             view.findViewById(R.id.pausebutton).setOnClickListener(v2->{
                 view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.pausebutton).setVisibility(View.INVISIBLE);
@@ -355,9 +411,17 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
                 view.findViewById(R.id.button_start).setVisibility(View.VISIBLE);
 
+                handler.removeCallbacksAndMessages(null);
+                odometer.removeUpdates();
+                if (bound){
+                getActivity().unbindService(connection);
+                bound = false;
+                }
 
-                //get Totaltime
+
+                //get Total time
                 totalTime = chronos.getText().toString();
+
                 //stop chronos
                 chronos.stop();
                 chronos.setBase(SystemClock.elapsedRealtime());
@@ -386,9 +450,10 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 alertDialogBuilder.setView(summaryView);
                 //get totalTime TextView
                 final TextView totalTimeView = (TextView) summaryView.findViewById(R.id.totalTimeValue),
-                targetSpeedTextView = (TextView) summaryView.findViewById(R.id.speedTargetValue);
+                targetSpeedTextView = (TextView) summaryView.findViewById(R.id.speedTargetValue), totalDistanceTextView = (TextView) summaryView.findViewById(R.id.totalDistanceValue);
                 totalTimeView.setText(totalTime);
                 targetSpeedTextView.setText(speedTarget.getText());
+                totalDistanceTextView.setText(distanceValue.getText());
                 //set dialog message
 
                 alertDialogBuilder.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -425,12 +490,29 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         tempModule = metawear.getModule(Temperature.class);
         tempSensor = tempModule.findSensors(Temperature.SensorType.BOSCH_ENV)[0];
         timerModule = metawear.getModule(Timer.class);
+
+
     }
 
+    /*
+    Callback from requestPermissions
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String[] permissions, int[] grantResults){
+        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+        if (requestCode == 100){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                //Toast location service enabled
+
+                Toast.makeText(getContext(),"Location Permission Granted",Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
+
 
     }
 
@@ -446,7 +528,10 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         return Math.round(value * scale) / scale;
     }
 
+    private void getDistance(){
 
 
+
+    }
 
 }

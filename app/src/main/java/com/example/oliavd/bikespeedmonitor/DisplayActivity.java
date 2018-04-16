@@ -87,6 +87,8 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
     private BluetoothDevice btDevice;
     private MetaWearBoard metawear;
 
+
+
     private final String RECONNECT_DIALOG_TAG= "reconnect_dialog_tag";
 
     @Override
@@ -150,8 +152,6 @@ public class DisplayActivity extends AppCompatActivity implements ServiceConnect
 
 
     }
-
-
 
     @Override
     public void onServiceDisconnected(ComponentName name) {

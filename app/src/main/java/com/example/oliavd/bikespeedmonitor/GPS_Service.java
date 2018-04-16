@@ -1,18 +1,25 @@
 package com.example.oliavd.bikespeedmonitor;
 
+import android.Manifest;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+import static android.support.v4.app.ActivityCompat.requestPermissions;
 
 /**
  * Created by oliavd on 4/9/18.
@@ -21,7 +28,8 @@ import android.widget.Toast;
 
 public class GPS_Service extends Service {
 
-    public static double distance_meters;
+    private final IBinder binder = new GPS_ServiceBinder();
+    public static double distance_meters = 0.0;
     public static Location last_loc = null;
     private LocationManager locManager;
     private LocationListener locListener;
@@ -35,7 +43,7 @@ public class GPS_Service extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
     }
 
     @Override
@@ -49,10 +57,6 @@ public class GPS_Service extends Service {
                 }
                 distance_meters += location.distanceTo(last_loc);
                 last_loc = location;
-
-                Intent i = new Intent("distance updates");
-                i.putExtra("distance",distance_meters);
-                sendBroadcast(i);
 
 
             }
@@ -70,7 +74,8 @@ public class GPS_Service extends Service {
 
             @Override
             public void onProviderDisabled(String provider) {
-
+                Toast.makeText(GPS_Service.this,"Enable Location Services First",Toast.LENGTH_SHORT).show();
+                //open location activation setting
                 Intent i =new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
@@ -80,9 +85,10 @@ public class GPS_Service extends Service {
 
         locManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
+
         try{
 
-            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,locListener);
+            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,1,locListener);
 
         }catch (SecurityException se){
             Log.w("error",se);
@@ -92,12 +98,22 @@ public class GPS_Service extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (locManager!=null){
-            locManager.removeUpdates(locListener);
-        }
+
     }
 
     public GPS_Service(){
 
     }
+
+    public void removeUpdates(){
+        if (locManager!=null){
+            locManager.removeUpdates(locListener);
+        }
+    }
+
+    public double getDistance_meters(){
+        return this.distance_meters;
+    }
+
+
 }
