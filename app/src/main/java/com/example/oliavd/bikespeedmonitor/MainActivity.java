@@ -20,6 +20,7 @@ import java.util.UUID;
 import bolts.Continuation;
 import bolts.Task;
 
+
 public class MainActivity extends AppCompatActivity implements ServiceConnection,BleScannerFragment.ScannerCommunicationBus{
 
 
