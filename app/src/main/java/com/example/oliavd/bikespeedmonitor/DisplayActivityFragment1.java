@@ -5,68 +5,43 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.os.Vibrator;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.mbientlab.metawear.CodeBlock;
-import com.mbientlab.metawear.Data;
-import com.mbientlab.metawear.ForcedDataProducer;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.Route;
 import com.mbientlab.metawear.Subscriber;
 import com.mbientlab.metawear.android.BtleService;
-import com.mbientlab.metawear.builder.RouteBuilder;
-import com.mbientlab.metawear.builder.RouteBuilder;
-import com.mbientlab.metawear.builder.RouteComponent;
-import com.mbientlab.metawear.builder.filter.Comparison;
-import com.mbientlab.metawear.builder.filter.ThresholdOutput;
-import com.mbientlab.metawear.builder.function.Function1;
 import com.mbientlab.metawear.data.Acceleration;
-import com.mbientlab.metawear.module.Accelerometer;
 import com.mbientlab.metawear.module.BarometerBosch;
-import com.mbientlab.metawear.module.Debug;
 import com.mbientlab.metawear.module.Led;
-import com.mbientlab.metawear.module.Logging;
-import com.mbientlab.metawear.module.AccelerometerBosch;
-import com.mbientlab.metawear.module.Accelerometer;
 
 import bolts.Continuation;
 import bolts.Task;
-import com.mbientlab.metawear.module.GyroBmi160;
+
 import com.mbientlab.metawear.module.SensorFusionBosch;
-import com.mbientlab.metawear.data.*;
 import com.mbientlab.metawear.module.Temperature;
 import com.mbientlab.metawear.module.Timer;
 import com.mbientlab.metawear.module.Haptic;
-
-import java.text.DecimalFormat;
-import java.util.Arrays;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -91,7 +66,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     private int countx, county, countz;
     private GPS_Service odometer;
     private boolean bound = false;
-    private TextView distanceValue;
+    private TextView distanceValueTextView;
 
 
 
@@ -174,7 +149,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         /*
         TextView holding the distance value form the GPS_Service
          */
-        distanceValue = (TextView) view.findViewById(R.id.distanceValueTextView);
+        distanceValueTextView = (TextView) view.findViewById(R.id.distanceValueTextView);
 
         //create handler for .gps_service thread
         final Handler handler = new Handler();
@@ -183,9 +158,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         Handle User Input of Threshold speed value
          */
 
-        TextView speedTarget = (TextView) view.findViewById(R.id.speedTargetValueTextView);
+        TextView speedTargetTextView = (TextView) view.findViewById(R.id.speedTargetValueTextView);
 
-        speedTarget.setOnClickListener(v->{
+        speedTargetTextView.setOnClickListener(v->{
 
               //getting prompt from prompt.xml view
               LayoutInflater li = LayoutInflater.from(getContext());
@@ -205,7 +180,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                   public void onClick(DialogInterface dialogInterface, int i) {
 
 
-                      speedTarget.setText(userInput.getText());
+                      speedTargetTextView.setText(userInput.getText());
 
                   }
               }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -220,7 +195,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
               //show dialog
               alertDialog.show();
 
-              targetSpeed = Double.parseDouble(speedTarget.getText().toString());
+              targetSpeed = Double.parseDouble(speedTargetTextView.getText().toString());
 
 
 
@@ -261,7 +236,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                     if (odometer!=null){
                         distance = odometer.getDistance_meters();
                     }
-                    distanceValue.setText(String.format("%1$,.2f m",distance));
+                    distanceValueTextView.setText(String.format("%1$,.2f m",distance));
                     Log.i("distance",String.format("%1$,.2f m",distance));
                     handler.postDelayed(this,3000);
                 }
@@ -392,7 +367,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                     });
 
                     //get target speed from Speed target TextView and convert to double
-                    targetSpeed = Double.parseDouble(speedTarget.getText().toString());
+                    targetSpeed = Double.parseDouble(speedTargetTextView.getText().toString());
 
                     //Compare to current vel and initiate haptic motor if lower
                    if (vel < targetSpeed){
@@ -431,7 +406,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             view.findViewById(R.id.pausebutton).setOnClickListener(v2->{
                 view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.pausebutton).setVisibility(View.INVISIBLE);
-                //TODO Set all view element appropriately if i decide to implement a pause button
+                //TODO Set all view element appropriately if i decide to do this
             });
 
             /*
@@ -489,8 +464,8 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 final TextView totalTimeView = (TextView) summaryView.findViewById(R.id.totalTimeValue),
                 targetSpeedTextView = (TextView) summaryView.findViewById(R.id.speedTargetValue), totalDistanceTextView = (TextView) summaryView.findViewById(R.id.totalDistanceValue);
                 totalTimeView.setText(totalTime);
-                targetSpeedTextView.setText(speedTarget.getText());
-                totalDistanceTextView.setText(distanceValue.getText());
+                targetSpeedTextView.setText(speedTargetTextView.getText());
+                totalDistanceTextView.setText(distanceValueTextView.getText());
                 //set dialog message
 
                 alertDialogBuilder.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -516,7 +491,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     public void onServiceConnected(ComponentName name, IBinder service) {
         metawear = ((BtleService.LocalBinder) service).getMetaWearBoard(settings.getBtDevice());
         /*
-        Get required module from board
+        Get required module from board and configure
          */
         sensorfusion = metawear.getModule(SensorFusionBosch.class);
         sensorfusion.configure()

@@ -50,13 +50,18 @@ public class GPS_Service extends Service {
     @Override
     public void onCreate(){
 
+        //Create a new location listener
+
         locListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location newlocation) {
-
+                /*
+                location object is the same if no movement is detected therefore distance_meter = 0
+                 */
                 if (last_loc == null){
                     last_loc = newlocation;
                 }
+                //distanceTo return approximate loc between newlocation and lastLocation
                 distance_meters += newlocation.distanceTo(last_loc);
                 last_loc = newlocation;
 
