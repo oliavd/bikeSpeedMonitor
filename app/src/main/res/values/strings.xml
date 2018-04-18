@@ -29,7 +29,7 @@
 
     <string name="target_speed">Target Speed</string>
     <string name="celsius">%1s C</string>
-    <string name="current_speed_value">%1s g/s</string>
+    <string name="current_speed_value">%1s m/s</string>
 
 
 </resources>
