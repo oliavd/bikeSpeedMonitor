@@ -30,6 +30,10 @@
     <string name="target_speed">Target Speed</string>
     <string name="celsius">%1s C</string>
     <string name="current_speed_value">%1s m/s</string>
+    <string name="current_distance_value">%1s m</string>
+    <string name="average_speed">Avg Speed: %1s m/s</string>
+    <string name="endAvg_speed">%1s m/s</string>
+    <string name="max_speed">Max Speed: %1s m/s</string>
 
 
 </resources>

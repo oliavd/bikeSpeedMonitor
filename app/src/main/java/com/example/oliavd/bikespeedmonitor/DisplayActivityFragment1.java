@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,12 +62,15 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
     private String totalTime,
     avgSpeed;
     private Timer timerModule;
-    private double vx, vy, vz, vel = 0,targetSpeed=0;
+    private double vx, vy, vz, vel = 0,targetSpeed=0, time, timeWhenStopped = 0, maxSpeed = 0, distance = 0, currentDistance , currentAvgSpeed = 0;
     //used for movement_end_check
     private int countx, county, countz;
     private GPS_Service odometer;
     private boolean bound = false;
     private TextView distanceValueTextView;
+    private int period = 6000;
+    private RollingAverage avgFinder = new RollingAverage(period);
+
 
 
 
@@ -159,8 +163,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
          */
 
         TextView speedTargetTextView = (TextView) view.findViewById(R.id.speedTargetValueTextView);
+        ImageView speedTargetImageView = (ImageView) view.findViewById(R.id.imageView3);
 
-        speedTargetTextView.setOnClickListener(v->{
+        speedTargetImageView.setOnClickListener(v->{
 
               //getting prompt from prompt.xml view
               LayoutInflater li = LayoutInflater.from(getContext());
@@ -207,6 +212,9 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
         view.findViewById(R.id.button_start).setOnClickListener((View v) -> {
 
+             currentDistance = 0.0;
+             distance = 0.0;
+
             Led led = metawear.getModule(Led.class);
 
             led.editPattern(Led.Color.GREEN, Led.PatternPreset.PULSE)
@@ -218,29 +226,29 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                     .commit();
             led.play();
 
-            //make stop button visible
-            view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
+            //make pause button visible
+            view.findViewById(R.id.pausebutton).setVisibility(View.VISIBLE);
              /*
              Bind to .GPS_Service
          */
-            Intent intent = new Intent(getActivity(),GPS_Service.class);
-            getActivity().bindService(intent,connection,Context.BIND_AUTO_CREATE);
+//            Intent intent = new Intent(getActivity(),GPS_Service.class);
+//            getActivity().bindService(intent,connection,Context.BIND_AUTO_CREATE);
 
             Log.i("onClickStart", "Clicked");
 
-            //handle schedule reading from GPS_Service and update UI every 3000 ms
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    double distance = 0.0;
-                    if (odometer!=null){
-                        distance = odometer.getDistance_meters();
-                    }
-                    distanceValueTextView.setText(String.format("%1$,.2f m",distance));
-                    Log.i("distance",String.format("%1$,.2f m",distance));
-                    handler.postDelayed(this,3000);
-                }
-            });
+//            handle schedule reading from GPS_Service and update UI every 3000 ms
+//            handler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    double distance = 0.0;
+//                    if (odometer!=null){
+//                        distance = odometer.getDistance_meters();
+//                    }
+//                    distanceValueTextView.setText(String.format("%1$,.2f m",distance));
+//                    Log.i("distance",String.format("%1$,.2f m",distance));
+//                    handler.postDelayed(this,3000);
+//                }
+//            });
 
             //initialize vx,vy,vz, countx,county,countz.
             vx=0;
@@ -250,6 +258,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             countx=0;
             county=0;
             countz=0;
+            maxSpeed =0.0;
 
             /*
             *   stream temperature with board
@@ -264,7 +273,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                    final Float celsius = data.value(Float.class);
                    Log.i("temp",celsius.toString());
                    getActivity().runOnUiThread(() -> {
-                       tempVal.setText(getString(R.string.celsius,celsius.toString()));
+                       tempVal.setText(getString(R.string.celsius,String.format("%.1f",celsius)));
                    });
                }));
            })
@@ -285,12 +294,13 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             */
 
             Chronometer chronos = (Chronometer) view.findViewById(R.id.elapsedTimeValue);
-            chronos.setBase(SystemClock.elapsedRealtime());
+            chronos.setBase(SystemClock.elapsedRealtime() + (long) timeWhenStopped);
             chronos.start();
 
 
 
-            TextView velTextView = view.findViewById(R.id.currentSpeedValueTextView);
+            TextView velTextView = view.findViewById(R.id.currentSpeedValueTextView), avgSpeedTextView = view.findViewById(R.id.avgSpeedTextView), maxSpeedTextView = view.findViewById(R.id.MaxSpeedTextView);
+
             /*
             Add a route for streaming linear acceleration from board
              */
@@ -309,7 +319,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                             Log.i("{y}", String.format("%.1f", value.y()));
                             Log.i("{z}", String.format("%.1f", value.z()));
 
-                            //TODO implement algorithms to find velocity (data generated every 10 ms
+                            //find velocity (data generated every 10 ms
                             vx+=roundAvoid(value.x(),1) * 0.01;
                             vy+=roundAvoid(value.y(),1) * 0.01;
                             vz+=roundAvoid(value.z(),1) * 0.01;
@@ -360,10 +370,24 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                             vz = 0;
                         }
 
-                    //vel = vel / 0.01;
+                    //find maximum speed
+
+
+                    if (vel >maxSpeed){
+                        maxSpeed = vel;
+                    }
+
+                    //find average speed here
+
+                    avgFinder.addData(vel);
+                    Log.i("average",String.format("%.1f",avgFinder.getMean()));
+
+
 
                     getActivity().runOnUiThread(() -> {
                         velTextView.setText(getString(R.string.current_speed_value,String.format("%.1f",vel)));
+                        avgSpeedTextView.setText(getString(R.string.average_speed,String.format("%.1f",avgFinder.getMean())));
+                        maxSpeedTextView.setText(getString(R.string.max_speed,String.format("%.1f",maxSpeed)));
                     });
 
                     //get target speed from Speed target TextView and convert to double
@@ -376,7 +400,13 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                        metawear.getModule(Haptic.class).startBuzzer((short) 500);
                    }
 
-                        });
+                   //TODO compute distance using velocity and time elapsed
+//                    time = (SystemClock.elapsedRealtime() - chronos.getBase()) / 1000.0 ;
+//                   Log.i("time",String.format("%.1f",time));
+                    getDistance(vel,0.01);
+
+                });
+
 
 //                        .to().stream((Subscriber) (data,env)-> {
 //
@@ -406,6 +436,22 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
             view.findViewById(R.id.pausebutton).setOnClickListener(v2->{
                 view.findViewById(R.id.stopbutton).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.pausebutton).setVisibility(View.INVISIBLE);
+
+                led.editPattern(Led.Color.BLUE, Led.PatternPreset.PULSE)
+                        .riseTime((short) 0)
+                        .pulseDuration((short) 1000)
+                        .repeatCount((byte) 5)
+                        .highTime((byte) 16)
+                        .lowIntensity((byte) 16)
+                        .commit();
+                led.play();
+
+                timeWhenStopped = chronos.getBase() - SystemClock.elapsedRealtime();
+                chronos.stop();
+                Log.i("Paused", String.format("%1$,.2f",timeWhenStopped));
+
+                metawear.tearDown();
+                velTextView.setText(getString(R.string.current_speed_value,String.format("%.1f",0.0)));
                 //TODO Set all view element appropriately if i decide to do this
             });
 
@@ -416,15 +462,18 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
                 view.findViewById(R.id.stopbutton).setVisibility(View.INVISIBLE);
                 view.findViewById(R.id.button_start).setVisibility(View.VISIBLE);
+                view.findViewById(R.id.pausebutton).setVisibility(View.INVISIBLE);
+
+
 
                 //trying to clean up
                 //remove all callbacks and message from handler
-                handler.removeCallbacksAndMessages(null);
-                odometer.removeUpdates();
-                if (bound){
-                getActivity().unbindService(connection);
-                bound = false;
-                }
+//                handler.removeCallbacksAndMessages(null);
+//                odometer.removeUpdates();
+//                if (bound){
+//                getActivity().unbindService(connection);
+//                bound = false;
+//                }
 
 
                 //get Total time
@@ -432,10 +481,13 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
 
                 //stop chronometer
                 chronos.stop();
+                //reset chronos
                 chronos.setBase(SystemClock.elapsedRealtime());
+                timeWhenStopped = 0;
 
                 Log.i("total time:",totalTime);
                 metawear.tearDown();
+
                 /*
                 Led showing that workout stopped
                  */
@@ -448,6 +500,7 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                         .lowIntensity((byte) 16)
                         .commit();
                 led.play();
+
                 /*
                 Display a summary dialog box with some metrics
                  */
@@ -462,10 +515,12 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 alertDialogBuilder.setView(summaryView);
                 //get totalTime TextView
                 final TextView totalTimeView = (TextView) summaryView.findViewById(R.id.totalTimeValue),
-                targetSpeedTextView = (TextView) summaryView.findViewById(R.id.speedTargetValue), totalDistanceTextView = (TextView) summaryView.findViewById(R.id.totalDistanceValue);
+                targetSpeedTextView = (TextView) summaryView.findViewById(R.id.speedTargetValue), totalDistanceTextView = (TextView) summaryView.findViewById(R.id.totalDistanceValue), EndAvgSpeed = (TextView) summaryView.findViewById(R.id.avgSpeedValue);
                 totalTimeView.setText(totalTime);
                 targetSpeedTextView.setText(speedTargetTextView.getText());
                 totalDistanceTextView.setText(distanceValueTextView.getText());
+                EndAvgSpeed.setText(getString(R.string.endAvg_speed,String.format("%.1f",avgFinder.getMean())));
+
                 //set dialog message
 
                 alertDialogBuilder.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -480,6 +535,13 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 //show dialog
                 alertDialog.show();
+
+                getActivity().runOnUiThread(() -> {
+                    velTextView.setText(getString(R.string.current_speed_value,String.format("%.1f",0.0)));
+                    avgSpeedTextView.setText(getString(R.string.average_speed,String.format("%.1f",0.0)));
+                    maxSpeedTextView.setText(getString(R.string.max_speed,String.format("%.1f",0.0)));
+                    distanceValueTextView.setText(getString(R.string.current_distance_value,String.format("%.1f ",0.0)));
+                });
 
             });
 
@@ -545,10 +607,32 @@ public class DisplayActivityFragment1 extends Fragment implements ServiceConnect
         return Math.round(value * scale) / scale;
     }
 
-//    private void getDistance(){
-//
-//
-//
-//    }
+    /*
+    Method to calculate distance by integrating velocity
+     */
+
+    private void getDistance(double velocity, double period){
+
+         distance += velocity * period;
+
+        Log.i("distance", String.format("distance = %.2f",distance));
+
+        if(distance > currentDistance ){
+            currentDistance = distance;
+        }
+        Log.i("current distance",String.format("vel = %.2f,  distance = %.2f ",velocity, currentDistance));
+        getActivity().runOnUiThread(() -> {
+
+            distanceValueTextView.setText(getString(R.string.current_distance_value,String.format("%1$,.2f ",currentDistance)));
+
+
+        });
+
+    }
+
+
+
+
+
 
 }

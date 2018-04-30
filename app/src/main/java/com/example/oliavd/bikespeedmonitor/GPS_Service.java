@@ -62,7 +62,10 @@ public class GPS_Service extends Service {
                     last_loc = newlocation;
                 }
                 //distanceTo return approximate loc between newlocation and lastLocation
+                Log.i("GPS last_loc",last_loc.toString());
+                Log.i("GPS new_loc",newlocation.toString());
                 distance_meters += newlocation.distanceTo(last_loc);
+                Log.i("GPS",String.format("Distance : %.1f",distance_meters));
                 last_loc = newlocation;
 
 
@@ -95,7 +98,8 @@ public class GPS_Service extends Service {
 
         try{
 
-            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,1,locListener);
+            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,locListener);
+
 
         }catch (SecurityException se){
             Log.w("error",se);
