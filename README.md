@@ -16,7 +16,7 @@ Download the [app apk](https://github.com/oliavd/bikeSpeedMonitor/blob/dev/Final
 
 ##### Using Android Studio
 
-* Clone this repository using git clone https://github.com/oliavd/bikeSpeedMonitor.git
+* Clone this repository using `git clone https://github.com/oliavd/bikeSpeedMonitor.git`
 * Open the repository folder in Android Studio
 * Under the Build tab in Android Studio:
     * Click on Clean Project
