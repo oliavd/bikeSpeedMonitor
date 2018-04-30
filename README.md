@@ -114,3 +114,4 @@ Download the [app apk](https://github.com/oliavd/bikeSpeedMonitor/blob/dev/Final
 9. Press the stop button to stop your workout.
 
 ### Final Presentation Slides
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSvg5km-5GBNq_aorOgf-qqlfTs6fJCsSxN5V-AGFx_0ikSqs8AlXXwfG3Nz4PRyLYucDGM_Alh2vdc/embed?start=true&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
